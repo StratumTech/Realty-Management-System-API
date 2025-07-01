@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: Realty-Management-System-API
+    version: 1.0.0
+
+logging:
+  level:
+    root: error
+    com.stratumtech.realtyapi: trace
+
