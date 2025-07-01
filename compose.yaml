@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  realtyms-api:
+    build: .
+    image: realtyms-api
+    container_name: realtyms-api
+    ports:
+      - "8080:8080"
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    driver: bridge
