@@ -38,7 +38,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtValidator validator;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         final String offset = "Bearer";
         final String authHeader = request.getHeader("Authorization");
 
@@ -54,7 +56,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     var upaToken = new UsernamePasswordAuthenticationToken(
                             username,
                             null,
-                            validator.getRoles(token).stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
+                            validator.getRoles(token).stream()
+                                    .map(SimpleGrantedAuthority::new)
+                                    .collect(Collectors.toList())
                     );
                     SecurityContextHolder.getContext().setAuthentication(upaToken);
                 }
