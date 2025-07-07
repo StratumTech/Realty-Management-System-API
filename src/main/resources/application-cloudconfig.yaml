@@ -1,0 +1,11 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: realty-management-system-api
+    version: 1.0.0
+  config:
+    import: 'optional:configserver:'
+  cloud:
+    config:
+      uri: http://${CONFIG_SERVICE_USERNAME}:${CONFIG_SERVICE_PASSWORD}@localhost:8888/
