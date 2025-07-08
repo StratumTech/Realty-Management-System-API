@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.server.authentication.ServerBearerTokenAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
@@ -17,7 +18,10 @@ public class SecurityConfig {
     private final ReactiveJwtDecoder jwtDecoder;
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain springSecurityFilterChain(
+            ServerHttpSecurity http,
+            ServerBearerTokenAuthenticationConverter tokenConverter
+    ) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
@@ -30,9 +34,8 @@ public class SecurityConfig {
                         .anyExchange()
                         .permitAll()
                 ).oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .jwtDecoder(jwtDecoder)
-                        )
+                        .bearerTokenConverter(tokenConverter)
+                        .jwt(jwt -> jwt.jwtDecoder(jwtDecoder))
                 );
 
         return http.build();
