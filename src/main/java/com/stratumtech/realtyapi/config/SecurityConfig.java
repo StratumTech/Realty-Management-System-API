@@ -1,77 +1,42 @@
 package com.stratumtech.realtyapi.config;
 
-import com.nimbusds.jose.crypto.DirectEncrypter;
-import com.nimbusds.jose.jwk.OctetSequenceKey;
-
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-
-import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.ExceptionTranslationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import com.stratumtech.realtyapi.config.jwt.autorization.filter.FindCsrfTokenFilter;
-import com.stratumtech.realtyapi.config.jwt.autorization.TokenCookieJweStringSerializer;
-import com.stratumtech.realtyapi.config.jwt.autorization.configurer.TokenCookieAuthenticationConfigurer;
-import com.stratumtech.realtyapi.config.jwt.autorization.strategy.TokenCookieSessionAuthenticationStrategy;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    public TokenCookieJweStringSerializer tokenCookieJweStringSerializer(
-            @Value("${jwt.cookie-token-key}") String cookieTokenKey
-    ) throws Exception {
-        return new TokenCookieJweStringSerializer(new DirectEncrypter(
-                OctetSequenceKey.parse(cookieTokenKey)
-        ));
-    }
+    private final ReactiveJwtDecoder jwtDecoder;
 
     @Bean
-    public SecurityFilterChain filterChain(
-            HttpSecurity http,
-            TokenCookieAuthenticationConfigurer configurer,
-            TokenCookieJweStringSerializer serializer) throws Exception {
-        final String[] ADMINISTRATORS = { "ADMIN", "REGIONAL_ADMIN" };
-        final String[] ALL_SYSTEMS_ROLES = { "ADMIN", "REGIONAL_ADMIN", "AGENT" };
-
-        var tokenCookieSessionAuthenticationStrategy = new TokenCookieSessionAuthenticationStrategy();
-        tokenCookieSessionAuthenticationStrategy.setTokenStringSerializer(serializer);
-
-        http.httpBasic(withDefaults())
-                .addFilterAfter(new FindCsrfTokenFilter(), ExceptionTranslationFilter.class)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                ).sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                        .sessionAuthenticationStrategy(tokenCookieSessionAuthenticationStrategy)
-                ).exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                ).cors(withDefaults())
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(new CookieCsrfTokenRepository())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .sessionAuthenticationStrategy(((authentication, request, response) -> {}))
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.POST,
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register")
+                        .permitAll()
+                        .pathMatchers("/api/v1/**")
+                        .authenticated()
+                        .anyExchange()
+                        .permitAll()
+                ).oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .jwtDecoder(jwtDecoder)
+                        )
                 );
 
         return http.build();
     }
+
 }
+
