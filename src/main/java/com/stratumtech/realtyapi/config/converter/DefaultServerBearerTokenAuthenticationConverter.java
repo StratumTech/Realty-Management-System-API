@@ -3,7 +3,8 @@ package com.stratumtech.realtyapi.config.converter;
 import org.springframework.http.HttpCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.web.server.authentication.ServerBearerTokenAuthenticationConverter;
+import org.springframework.security.oauth2
+        .server.resource.web.server.authentication.ServerBearerTokenAuthenticationConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -16,6 +17,9 @@ public class DefaultServerBearerTokenAuthenticationConverter
         HttpCookie cookie = exchange.getRequest()
                 .getCookies()
                 .getFirst("SESSION_JWT");
+        if (cookie == null || cookie.getValue().isBlank()) {
+            return Mono.empty();
+        }
         return Mono.just(new BearerTokenAuthenticationToken(cookie.getValue()));
     }
 }
