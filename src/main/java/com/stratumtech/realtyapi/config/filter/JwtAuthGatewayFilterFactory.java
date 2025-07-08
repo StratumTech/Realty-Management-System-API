@@ -1,10 +1,11 @@
 package com.stratumtech.realtyapi.config.filter;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -30,11 +31,11 @@ public class JwtAuthGatewayFilterFactory
                     .decode(token)
                     .flatMap(jwt -> {
                         String userId = jwt.getSubject();
-                        List<String> roles = jwt.getClaimAsStringList("roles");
+                        String role = jwt.getClaimAsString("role");
 
                         var mutatedReq = exchange.getRequest().mutate()
                                 .header("X-User-ID", userId)
-                                .header("X-User-Roles", String.join(",", roles))
+                                .header("X-User-Role", role)
                                 .build();
 
                         return chain.filter(exchange.mutate().request(mutatedReq).build());

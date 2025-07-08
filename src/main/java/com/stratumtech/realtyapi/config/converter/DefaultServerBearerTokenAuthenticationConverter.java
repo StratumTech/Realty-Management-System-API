@@ -1,13 +1,13 @@
 package com.stratumtech.realtyapi.config.converter;
 
+import reactor.core.publisher.Mono;
 import org.springframework.http.HttpCookie;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.oauth2
         .server.resource.web.server.authentication.ServerBearerTokenAuthenticationConverter;
-import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
 @Component
 public class DefaultServerBearerTokenAuthenticationConverter
