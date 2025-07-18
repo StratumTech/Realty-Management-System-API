@@ -12,11 +12,12 @@ import org.springframework.security.oauth2
 @Component
 public class DefaultServerBearerTokenAuthenticationConverter
         extends ServerBearerTokenAuthenticationConverter {
+
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         HttpCookie cookie = exchange.getRequest()
                 .getCookies()
-                .getFirst("SESSION_JWT");
+                .getFirst("__Host-auth-token");
         if (cookie == null || cookie.getValue().isBlank()) {
             return Mono.empty();
         }

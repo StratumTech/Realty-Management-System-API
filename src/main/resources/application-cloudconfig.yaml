@@ -8,4 +8,4 @@ spring:
     import: 'optional:configserver:'
   cloud:
     config:
-      uri: http://${CONFIG_SERVICE_USERNAME}:${CONFIG_SERVICE_PASSWORD}@localhost:8888/
+      uri: http://${CONFIG_SERVICE_USERNAME}:${CONFIG_SERVICE_PASSWORD}@${CONFIG_SERVICE_HOST}:8888/
