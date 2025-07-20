@@ -38,10 +38,16 @@ public class JwtAuthGatewayFilterFactory
                         log.debug("User role from cookie: {}", role);
                         var mutatedReq = exchange.getRequest().mutate()
                                 .header("X-USER-UUID", userId)
-                                .header("X-USER-ROLE", role)
-                                .build();
+                                .header("X-USER-ROLE", role);
 
-                        return chain.filter(exchange.mutate().request(mutatedReq).build());
+                        if(role.endsWith("REGIONAL_AGENT")){
+                            String regionId = jwt.getClaimAsString("adminRegionId");
+                            String referralCode = jwt.getClaimAsString("adminReferralCode");
+                            mutatedReq.header("X-ADMIN-REGION-ID", regionId);
+                            mutatedReq.header("X-ADMIN-REFERRAL-CODE", referralCode);
+                        }
+
+                        return chain.filter(exchange.mutate().request(mutatedReq.build()).build());
                     })
                     .onErrorResume(e -> {
                         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
